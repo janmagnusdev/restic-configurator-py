@@ -1,0 +1,24 @@
+- [ ] allow specifying a parent id 
+  - [ ] prompt whether one should be used
+  - [ ] if yes, print snapshot output of restic
+  - [ ] then, ask for parent snapshot id
+- [ ] test backups for home server
+- [ ] actually log everything, not just restic
+- [ ] make windows not produce a window for executing the backup script - e.g. pythonw.exe
+  - however, sys.stdout is not available then
+  - solve somehow
+  - restic.exe opens a window itself as well
+- [ ] run automatically on mount
+  - [ ] launchd: `<key>StartOnMount</key><true/>` 
+    - [ ] add command args for implying that is run on mount
+    - [ ] check whether /Volumes/<target-volume> is mounted correctly
+    - [ ] maybe just use WatchPaths?
+- [ ] restic core functionality
+  - [ ] prune
+  - [ ] unlock locked repos if they are locked
+- [ ] migrate to click entirely
+- [ ] make subprocess call robust - one single point of entry, that's it
+- [ ] migrate to conda environment
+- [ ] remove committed.env, and include then env variable in python per default
+- [ ] INSTALL.md files for all systems
+- [ ] move .env files to system/ folder - so that they belong to a specific system!

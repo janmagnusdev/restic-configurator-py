@@ -1,0 +1,18 @@
+{
+  "name": "Example",
+  "paths": {
+    "pass_file_path": "../../passfiles/example.pass",
+    "files_list_path": "./files.txt",
+    "exclude_patterns_path": "../exclude-patterns.txt",
+    "log_folder": "./logs/"
+  },
+  "env_filenames": ["example.env"],
+  "restic_repo_url": "b2:example-restic-backups:example-system",
+  "restic_exe": "restic.exe",
+  "post_backup": {
+    "forget": true,
+    "forget_dry": true,
+    "check": true,
+    "shutdown": false
+  }
+}

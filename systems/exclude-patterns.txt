@@ -1,0 +1,18 @@
+# folders
+site-packages
+node_modules
+.git
+.idea
+javaEclipse
+AppData
+nvm
+
+# python environments
+*-env
+__pycache__
+
+# file types
+*.pyc
+*.exe
+*.ISO
+*.iso

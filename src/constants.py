@@ -1,0 +1,2 @@
+MACOS = "Darwin"
+WINDOWS = "Windows"
