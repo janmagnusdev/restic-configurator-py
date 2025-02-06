@@ -22,3 +22,7 @@
 - [ ] remove committed.env, and include then env variable in python per default
 - [ ] INSTALL.md files for all systems
 - [ ] move .env files to system/ folder - so that they belong to a specific system!
+- [ ] keep only last x log files
+
+# NEXT
+- [ ] click migration
