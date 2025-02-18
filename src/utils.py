@@ -2,8 +2,7 @@ import subprocess
 import re
 import os
 
-from dotenv import find_dotenv, dotenv_values
-
+from dotenv import dotenv_values
 
 version_check_type = {"result": bool, "min": str, "version": str}
 
@@ -31,12 +30,8 @@ def resolve_config_path(system_config, path_key: str, system_config_path: str) -
         return abs_path_rel_to_given_path(config_file_dir, path)
 
 
-def read_envs(env_paths: list[str]) -> dict[str, str | None]:
-    # start with first, iterate over remaining
-    environment = dotenv_values(find_dotenv(env_paths[0]))
-    for env_path in env_paths[1:]:
-        append = dotenv_values(find_dotenv(env_path))
-        environment.update(append)
+def read_env_from_env_file_path(env_file_path: str) -> dict[str, str | None]:
+    environment = dotenv_values(env_file_path)
 
     # include restic specific RESTIC_PROGRESS_FPS
     environment["RESTIC_PROGRESS_FPS"] = "0.1"

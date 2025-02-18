@@ -27,3 +27,4 @@
 # NEXT
 - [ ] click migration
 - [ ] specify .env files relative to config.json files
+- [ ] migrate to pathlib!

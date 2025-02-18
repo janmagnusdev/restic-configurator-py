@@ -8,7 +8,7 @@ from dataclasses import dataclass, astuple
 from datetime import datetime
 
 from constants import MACOS, WINDOWS
-from utils import resolve_config_path, abs_norm_path, read_envs, check_restic_version
+from utils import resolve_config_path, abs_norm_path, read_env_from_env_file_path, check_restic_version
 
 
 @dataclass
@@ -63,6 +63,7 @@ def load_args_and_config_file():
     exclude_patterns_path = resolve_config_path(
         system_config, "exclude_patterns_path", args.system_config
     )
+    env_file_path = resolve_config_path(system_config, "env_file_path", args.system_config)
 
     restic_path = abs_norm_path(system_config["restic_exe"])
 
@@ -70,7 +71,7 @@ def load_args_and_config_file():
     repo = system_config["restic_repo_url"]
 
     # read envs
-    environment = read_envs(system_config["env_filenames"])
+    environment = read_env_from_env_file_path(env_file_path)
 
     # determine current sys
     current_sys = platform.system()
