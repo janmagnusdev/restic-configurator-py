@@ -3,7 +3,7 @@ import logging.handlers
 import sys
 from logging import Logger
 
-from constants import PROJECT_ROOT
+from restic_configurator_py.constants import PROJECT_ROOT
 
 LOG_FILE_PATH = PROJECT_ROOT / "logs/rcy-main-log.log"
 

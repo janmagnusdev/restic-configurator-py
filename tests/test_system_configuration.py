@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from constants import PROJECT_ROOT
-from rcy_system_configuration import SystemConfiguration
+from restic_configurator_py.constants import PROJECT_ROOT
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 
 def test_can_read_example_config():

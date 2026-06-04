@@ -1,7 +1,11 @@
 import shlex
 import sys
 
-from commons import execute_restic_command, load_args_and_config_file, get_log_file_absolute
+from commons import (
+    execute_restic_command,
+    load_args_and_config_file,
+    get_log_file_absolute,
+)
 import os
 
 
@@ -40,10 +44,13 @@ def main():
         pass_file_path,
     ]
 
-    log_file_absolute = get_log_file_absolute(log_folder=log_folder, args_scheduled=args.scheduled,
-                                              command_name="ops")
+    log_file_absolute = get_log_file_absolute(
+        log_folder=log_folder, args_scheduled=args.scheduled, command_name="ops"
+    )
 
-    execute_restic_command(ops_command, environment=environment, log_file_absolute=log_file_absolute)
+    execute_restic_command(
+        ops_command, environment=environment, log_file_absolute=log_file_absolute
+    )
 
     # all tasks done
     sys.exit(0)

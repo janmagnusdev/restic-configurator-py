@@ -2,7 +2,7 @@ import pytest
 from _pytest.capture import CaptureFixture
 from pydantic_settings import CliApp
 
-from cli import ResticConfiguratorPy
+from restic_configurator_py.cli import ResticConfiguratorPy
 
 
 def test_cli_help(capsys: CaptureFixture[str]):

@@ -1,11 +1,10 @@
 from pprint import pformat
-from sysconfig import expand_makefile_vars
 
 from pydantic_settings import BaseSettings, CliApp
 
-import rcy_logging
-from constants import PROJECT_ROOT
-from rcy_system_configuration import SystemConfiguration
+from restic_configurator_py import rcy_logging
+from restic_configurator_py.constants import PROJECT_ROOT
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 logger = rcy_logging.create_logger(__name__)
 
