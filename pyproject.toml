@@ -8,11 +8,14 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
     "python-dotenv>=1.2.2",
 ]
 
 [project.scripts]
 restic-configurator-py = "restic_configurator_py:main"
+rcy = "restic_configurator_py:main"
 
 [[tool.uv.index]]
 url = "https://pypi.python.org/simple"
@@ -20,3 +23,10 @@ url = "https://pypi.python.org/simple"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ruff>=0.15.16",
+]
+

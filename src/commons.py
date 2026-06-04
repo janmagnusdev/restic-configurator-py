@@ -1,34 +1,21 @@
-import platform
-import subprocess
 import argparse
 import json
 import os
+import platform
+import subprocess
 import sys
-from dataclasses import dataclass, astuple
 from datetime import datetime
 
 from constants import MACOS, WINDOWS
-from utils import resolve_config_path, abs_norm_path, read_env_from_env_file_path, check_restic_version
+from deprecated.load_result import LoadResult
+from rcy_logging import create_logger
+from utils import (
+    check_restic_version,
+    read_env_from_env_file_path,
+    resolve_config_path,
+)
 
-
-@dataclass
-class LoadResult:
-    pass_file_path: str
-    log_folder: str
-    restic_path: str
-    repo: str
-    environment: dict
-    files_list_path: str
-    exclude_patterns_path: str
-    system_config: dict
-    current_sys: str
-    args: argparse.Namespace
-
-    def __iter__(self):
-        return iter(astuple(self))
-
-    def __getitem__(self, keys):
-        return iter(getattr(self, k) for k in keys)
+logger = create_logger(__name__)
 
 
 def load_args_and_config_file():
@@ -50,7 +37,7 @@ def load_args_and_config_file():
 
     with open(args.system_config) as file:
         system_config = json.load(file)
-        print("System Name: ", system_config["name"])
+        logger.info("System Name: ", system_config["name"])
 
     # paths
     pass_file_path = resolve_config_path(
@@ -63,9 +50,12 @@ def load_args_and_config_file():
     exclude_patterns_path = resolve_config_path(
         system_config, "exclude_patterns_path", args.system_config
     )
-    env_file_path = resolve_config_path(system_config, "env_file_path", args.system_config)
+    env_file_path = resolve_config_path(
+        system_config, "env_file_path", args.system_config
+    )
 
-    restic_path = abs_norm_path(system_config["restic_exe"])
+    path = system_config["restic_exe"]
+    restic_path = os.path.abspath(os.path.normpath(path))
 
     # repo
     repo = system_config["restic_repo_url"]
@@ -75,7 +65,7 @@ def load_args_and_config_file():
 
     # determine current sys
     current_sys = platform.system()
-    print("Running on...", current_sys)
+    logger.info("Running on...", current_sys)
 
     # checks
     if current_sys not in [MACOS, WINDOWS]:
@@ -105,7 +95,7 @@ def load_args_and_config_file():
 
 
 def execute_restic_command(command: list[str], environment, log_file_absolute: str):
-    print(f"command to execute: {' '.join(command)}")
+    logger.info(f"command to execute: {' '.join(command)}")
 
     # a appends to the file, w (over)writes; b stands for binary
     with open(log_file_absolute, "wb") as buffered_file_writer:

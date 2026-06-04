@@ -1,12 +1,12 @@
-import subprocess
-from commons import (
-    execute_restic_command,
-    load_args_and_config_file,
-    get_log_file_absolute,
-)
 import os
+import subprocess
 import sys
 
+from commons import (
+    execute_restic_command,
+    get_log_file_absolute,
+    load_args_and_config_file,
+)
 from constants import MACOS, WINDOWS
 
 

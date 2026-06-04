@@ -1,14 +1,14 @@
-import subprocess
-import re
 import os
+import re
+import subprocess
 
 from dotenv import dotenv_values
 
+from rcy_logging import create_logger
+
 version_check_type = {"result": bool, "min": str, "version": str}
 
-
-def abs_norm_path(path: str) -> str:
-    return os.path.abspath(os.path.normpath(path))
+logger = create_logger(__name__)
 
 
 def abs_path_rel_to_given_path(base: str, relative_path: str) -> str:
@@ -39,7 +39,7 @@ def read_env_from_env_file_path(env_file_path: str) -> dict[str, str | None]:
     # also use existing os environment
     environment.update(os.environ)
 
-    print("Using environment:", environment)
+    logger.info("Using environment:", environment)
     return environment
 
 

@@ -1,0 +1,20 @@
+{
+    "name": 1,
+    "paths": {
+        "pass_file_path": "thiscantpossiblybeapath",
+        "files_list_path": "./files.txt",
+        "exclude_patterns_path": "../exclude-patterns.txt",
+        "log_folder": "./logs/"
+    },
+    "env_filenames": [
+        "john@example.org"
+    ],
+    "restic_repo_url": "b2:example-restic-backups:example-system",
+    "restic_exe": true,
+    "post_backup": {
+        "forget": true,
+        "forget_dry": true,
+        "check": true,
+        "shutdown": false
+    }
+}
