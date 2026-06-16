@@ -5,11 +5,13 @@ import platform
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
 
-from constants import MACOS, WINDOWS
-from deprecated.load_result import LoadResult
-from rcy_logging import create_logger
-from utils import (
+from restic_configurator_py.constants import MACOS, WINDOWS
+from restic_configurator_py.deprecated.load_result import LoadResult
+from restic_configurator_py.rcy_logging import create_logger
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
+from restic_configurator_py.utils import (
     check_restic_version,
     read_env_from_env_file_path,
     resolve_config_path,

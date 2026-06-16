@@ -4,7 +4,7 @@ import subprocess
 
 from dotenv import dotenv_values
 
-from rcy_logging import create_logger
+from restic_configurator_py.rcy_logging import create_logger
 
 version_check_type = {"result": bool, "min": str, "version": str}
 

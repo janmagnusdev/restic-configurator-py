@@ -1,13 +1,17 @@
 import os
 import subprocess
 import sys
+import tempfile
+from copy import deepcopy
+from pathlib import Path
 
-from commons import (
+from restic_configurator_py.commons import (
     execute_restic_command,
     get_log_file_absolute,
     load_args_and_config_file,
 )
-from constants import MACOS, WINDOWS
+from restic_configurator_py.constants import MACOS, WINDOWS
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 
 def restic_backup(
@@ -39,6 +43,42 @@ def restic_backup(
     execute_restic_command(
         backup_command, environment=environment, log_file_absolute=log_file_absolute
     )
+
+
+def restic_backup_system_config(system_config: SystemConfiguration):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        tmp_passfile_path: Path = tmp_dir / "passfile.txt"
+        tmp_passfile_path.write_text(system_config.password.get_secret_value(), "utf-8")
+
+        tmp_files_list: Path = tmp_dir / "files_list.txt"
+        tmp_files_list.write_text(
+            "\n".join(system_config.paths.include_patterns), "utf-8"
+        )
+
+        tmp_exclude_list: Path = tmp_dir / "exclude.txt"
+        tmp_exclude_list.write_text(
+            "\n".join(system_config.paths.exclude_patterns), "utf-8"
+        )
+
+        environment = deepcopy(system_config.envs)
+
+        # include restic specific RESTIC_PROGRESS_FPS
+        environment["RESTIC_PROGRESS_FPS"] = "0.1"
+
+        # also use existing os environment
+        environment.update(os.environ)
+
+        restic_backup(
+            restic_path=system_config.restic_bin,
+            repo=system_config.restic_repo_url,
+            pass_file_path=str(tmp_passfile_path.resolve()),
+            files_list_path=str(tmp_files_list.resolve()),
+            exclude_patterns_path=str(tmp_exclude_list.resolve()),
+            log_folder=system_config.paths.log_folder,
+            environment=environment,
+            args_scheduled=False,
+        )
 
 
 def restic_forget(

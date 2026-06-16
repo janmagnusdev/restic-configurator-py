@@ -8,14 +8,16 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.4.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
     "python-dotenv>=1.2.2",
+    "ruff>=0.15.16",
 ]
 
 [project.scripts]
-restic-configurator-py = "restic_configurator_py:main"
-rcy = "restic_configurator_py:main"
+restic-configurator-py = "restic_configurator_py.cli:main"
+rcy = "restic_configurator_py.cli:main"
 
 [[tool.uv.index]]
 url = "https://pypi.python.org/simple"

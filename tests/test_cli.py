@@ -1,20 +1,13 @@
-import pytest
-from _pytest.capture import CaptureFixture
-from pydantic_settings import CliApp
-
-from restic_configurator_py.cli import ResticConfiguratorPy
+import subprocess
+import sys
 
 
-def test_cli_help(capsys: CaptureFixture[str]):
-    with pytest.raises(SystemExit):
-        CliApp.run(ResticConfiguratorPy, cli_args=["--help"])
+def test_cli_help():
+    result = subprocess.run(
+        ["uv", "run", "rcy", "--help"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
-    stdout = capsys.readouterr().out
-    assert "usage:" in stdout
-
-
-def test_cli(capsys: CaptureFixture[str]):
-    CliApp.run(ResticConfiguratorPy, cli_args=[])
-
-    stdout = capsys.readouterr().out
-    assert "name='Example'" in stdout
+    assert "Usage:" in result.stdout.decode()
+    print(result.stdout.decode())
