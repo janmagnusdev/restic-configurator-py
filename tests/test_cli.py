@@ -1,5 +1,11 @@
 import subprocess
 import sys
+from pathlib import Path
+
+import pytest
+from click.testing import CliRunner
+
+from restic_configurator_py.constants import PROJECT_ROOT
 
 
 def test_cli_help():
@@ -13,6 +19,23 @@ def test_cli_help():
     print(result.stdout.decode())
 
 
-class LazyLoadingEntryPointTests:
-    def test(self):
-        pass
+cmd_folder = PROJECT_ROOT / "src/restic_configurator_py/cli/commands"
+test_system_config = PROJECT_ROOT / "systems/example.config.toml"
+
+cmds_to_test = list(cmd_folder.glob("*.py"))
+
+
+@pytest.mark.parametrize("cmd", cmds_to_test)
+def test_command_entry_points(cmd: Path):
+    if cmd.name == "__init__.py":
+        return
+
+    proc = subprocess.run(
+        ["uv", "run", "rcy", test_system_config.resolve(), cmd.stem, "--help"],
+        cwd=PROJECT_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert "Error" not in proc.stdout
+    assert "usage" in proc.stdout.lower()
