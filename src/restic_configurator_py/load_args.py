@@ -3,9 +3,11 @@ import json
 import logging
 import os
 import platform
+from dataclasses import astuple, dataclass
+
+from typing_extensions import deprecated
 
 from restic_configurator_py.constants import MACOS, WINDOWS
-from restic_configurator_py.deprecated.load_result import LoadResult
 from restic_configurator_py.utils import (
     check_restic_version,
     read_env_from_env_file_path,
@@ -15,6 +17,7 @@ from restic_configurator_py.utils import (
 logger = logging.getLogger(__name__)
 
 
+@deprecated("TODO: this needs to be replaced")
 def load_args_and_config_file():
     argument_parser = argparse.ArgumentParser(
         description="Device Agnostic Restic Execution Suite (DARES)"
@@ -89,3 +92,24 @@ def load_args_and_config_file():
         current_sys=current_sys,
         args=args,
     )
+
+
+@deprecated("TODO: this needs to be replaced")
+@dataclass
+class LoadResult:
+    pass_file_path: str
+    log_folder: str
+    restic_path: str
+    repo: str
+    environment: dict
+    files_list_path: str
+    exclude_patterns_path: str
+    system_config: dict
+    current_sys: str
+    args: argparse.Namespace
+
+    def __iter__(self):
+        return iter(astuple(self))
+
+    def __getitem__(self, keys):
+        return iter(getattr(self, k) for k in keys)

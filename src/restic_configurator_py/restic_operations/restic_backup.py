@@ -5,6 +5,8 @@ import tempfile
 from copy import deepcopy
 from pathlib import Path
 
+from typing_extensions import deprecated
+
 from restic_configurator_py.constants import MACOS, WINDOWS
 from restic_configurator_py.load_args import load_args_and_config_file
 from restic_configurator_py.rcy_logging import get_log_file_absolute
@@ -14,6 +16,7 @@ from restic_configurator_py.restic_operations.restic_check import restic_check
 from restic_configurator_py.restic_operations.restic_forget import restic_forget
 
 
+@deprecated("TODO: this needs to be replaced")
 def restic_backup(
     restic_path,
     repo,
@@ -81,6 +84,7 @@ def restic_backup_via_system_config(system_config: SystemConfiguration):
         )
 
 
+@deprecated("TODO: this needs to be replaced")
 def main():
     loading_result = load_args_and_config_file()
     (

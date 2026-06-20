@@ -3,6 +3,7 @@ import re
 import subprocess
 
 from dotenv import dotenv_values
+from typing_extensions import deprecated
 
 from restic_configurator_py.rcy_logging import create_logger
 
@@ -11,6 +12,7 @@ version_check_type = {"result": bool, "min": str, "version": str}
 logger = create_logger(__name__)
 
 
+@deprecated("TODO: this needs to be replaced")
 def abs_path_rel_to_given_path(base: str, relative_path: str) -> str:
     return os.path.abspath(os.path.join(base, os.path.normpath(relative_path)))
 
@@ -30,6 +32,7 @@ def resolve_config_path(system_config, path_key: str, system_config_path: str) -
         return abs_path_rel_to_given_path(config_file_dir, path)
 
 
+@deprecated("TODO: this needs to be replaced")
 def read_env_from_env_file_path(env_file_path: str) -> dict[str, str | None]:
     environment = dotenv_values(env_file_path)
 
@@ -43,6 +46,7 @@ def read_env_from_env_file_path(env_file_path: str) -> dict[str, str | None]:
     return environment
 
 
+@deprecated("TODO: this needs to be replaced")
 def check_restic_version(restic_path) -> version_check_type:
     # Define the command you want to execute
     command = f"{restic_path} version"

@@ -1,11 +1,14 @@
 import subprocess
 import sys
 
+from typing_extensions import deprecated
+
 from restic_configurator_py.rcy_logging import create_logger
 
 logger = create_logger(__name__)
 
 
+@deprecated("TODO: this needs to be replaced")
 def execute_restic_command(command: list[str], environment, log_file_absolute: str):
     logger.info(f"command to execute: {' '.join(command)}")
 

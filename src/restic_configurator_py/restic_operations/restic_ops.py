@@ -2,11 +2,14 @@ import os
 import shlex
 import sys
 
+from typing_extensions import deprecated
+
 from restic_configurator_py.load_args import load_args_and_config_file
 from restic_configurator_py.rcy_logging import get_log_file_absolute
 from restic_configurator_py.restic_operations.execute import execute_restic_command
 
 
+@deprecated("TODO: this needs to be replaced")
 def main():
     loading_result = load_args_and_config_file()
     (

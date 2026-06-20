@@ -5,6 +5,8 @@ import sys
 from datetime import datetime
 from logging import Logger
 
+from typing_extensions import deprecated
+
 from restic_configurator_py.constants import PROJECT_ROOT
 
 LOG_FILE_PATH = PROJECT_ROOT / "logs/rcy-main-log.log"
@@ -36,6 +38,7 @@ def create_logger(name: str) -> Logger:
     return logger
 
 
+@deprecated("TODO: this needs to be replaced")
 def get_log_file_absolute(log_folder, args_scheduled, command_name):
     partial_scheduled = ".scheduled" if args_scheduled else ""
 

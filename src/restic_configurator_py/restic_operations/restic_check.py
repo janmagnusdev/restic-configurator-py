@@ -1,7 +1,10 @@
+from typing_extensions import deprecated
+
 from restic_configurator_py.rcy_logging import get_log_file_absolute
 from restic_configurator_py.restic_operations.execute import execute_restic_command
 
 
+@deprecated("TODO: this needs to be replaced")
 def restic_check(
     restic_path, repo, pass_file_path, environment, log_folder, args_scheduled
 ):
