@@ -17,7 +17,7 @@ dependencies = [
 
 [project.scripts]
 restic-configurator-py = "restic_configurator_py.cli:main"
-rcy = "restic_configurator_py.cli:main"
+rcy = "restic_configurator_py.cli.cli:main"
 
 [[tool.uv.index]]
 url = "https://pypi.python.org/simple"

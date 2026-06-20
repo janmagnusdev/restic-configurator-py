@@ -1,23 +1,18 @@
 import argparse
 import json
+import logging
 import os
 import platform
-import subprocess
-import sys
-from datetime import datetime
-from pathlib import Path
 
 from restic_configurator_py.constants import MACOS, WINDOWS
 from restic_configurator_py.deprecated.load_result import LoadResult
-from restic_configurator_py.rcy_logging import create_logger
-from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 from restic_configurator_py.utils import (
     check_restic_version,
     read_env_from_env_file_path,
     resolve_config_path,
 )
 
-logger = create_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def load_args_and_config_file():
@@ -94,34 +89,3 @@ def load_args_and_config_file():
         current_sys=current_sys,
         args=args,
     )
-
-
-def execute_restic_command(command: list[str], environment, log_file_absolute: str):
-    logger.info(f"command to execute: {' '.join(command)}")
-
-    # a appends to the file, w (over)writes; b stands for binary
-    with open(log_file_absolute, "wb") as buffered_file_writer:
-        buffered_file_writer.truncate()
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            env=environment,
-        )
-        # read from stdout until b"" is read, which stops the iter object
-        for c in iter(lambda: process.stdout.read(1), b""):
-            sys.stdout.buffer.write(c)
-            sys.stdout.buffer.flush()
-            buffered_file_writer.write(c)
-            buffered_file_writer.flush()
-
-
-def get_log_file_absolute(log_folder, args_scheduled, command_name):
-    partial_scheduled = ".scheduled" if args_scheduled else ""
-
-    current_time = datetime.now().isoformat()
-    # Replace colons (which are invalid characters in file names) with underscores
-    current_run_log_file = current_time.replace(":", "_")
-    current_run_log_file += f".{command_name}{partial_scheduled}.log"
-
-    return os.path.abspath(os.path.join(log_folder, current_run_log_file))

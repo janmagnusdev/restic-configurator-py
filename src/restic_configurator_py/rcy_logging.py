@@ -1,6 +1,8 @@
 import logging
 import logging.handlers
+import os
 import sys
+from datetime import datetime
 from logging import Logger
 
 from restic_configurator_py.constants import PROJECT_ROOT
@@ -32,3 +34,14 @@ def create_logger(name: str) -> Logger:
     logger.addHandler(stream_handler)
 
     return logger
+
+
+def get_log_file_absolute(log_folder, args_scheduled, command_name):
+    partial_scheduled = ".scheduled" if args_scheduled else ""
+
+    current_time = datetime.now().isoformat()
+    # Replace colons (which are invalid characters in file names) with underscores
+    current_run_log_file = current_time.replace(":", "_")
+    current_run_log_file += f".{command_name}{partial_scheduled}.log"
+
+    return os.path.abspath(os.path.join(log_folder, current_run_log_file))

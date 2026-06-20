@@ -5,13 +5,13 @@ import tempfile
 from copy import deepcopy
 from pathlib import Path
 
-from restic_configurator_py.commons import (
-    execute_restic_command,
-    get_log_file_absolute,
-    load_args_and_config_file,
-)
 from restic_configurator_py.constants import MACOS, WINDOWS
+from restic_configurator_py.load_args import load_args_and_config_file
+from restic_configurator_py.rcy_logging import get_log_file_absolute
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
+from restic_configurator_py.restic_operations.execute import execute_restic_command
+from restic_configurator_py.restic_operations.restic_check import restic_check
+from restic_configurator_py.restic_operations.restic_forget import restic_forget
 
 
 def restic_backup(
@@ -45,7 +45,7 @@ def restic_backup(
     )
 
 
-def restic_backup_system_config(system_config: SystemConfiguration):
+def restic_backup_via_system_config(system_config: SystemConfiguration):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         tmp_passfile_path: Path = tmp_dir / "passfile.txt"
@@ -79,66 +79,6 @@ def restic_backup_system_config(system_config: SystemConfiguration):
             environment=environment,
             args_scheduled=False,
         )
-
-
-def restic_forget(
-    restic_path,
-    repo,
-    pass_file_path,
-    environment,
-    log_folder,
-    args_scheduled,
-    dry_run=True,
-):
-    forget_command = [
-        restic_path,
-        "-vv",
-        "-r",
-        repo,
-        "--password-file",
-        pass_file_path,
-        "forget",
-        "--keep-within-daily",
-        "14d",
-        "--keep-within-weekly",
-        "1m",
-        "--keep-within-monthly",
-        "1y",
-        "--keep-within-yearly",
-        "75y",
-        "--prune",
-    ]
-    if dry_run:
-        forget_command.append("--dry-run")
-    execute_restic_command(
-        command=forget_command,
-        environment=environment,
-        log_file_absolute=get_log_file_absolute(
-            log_folder=log_folder, args_scheduled=args_scheduled, command_name="forget"
-        ),
-    )
-
-
-def restic_check(
-    restic_path, repo, pass_file_path, environment, log_folder, args_scheduled
-):
-    check_command = [
-        restic_path,
-        "-vv",
-        "-r",
-        repo,
-        "--password-file",
-        pass_file_path,
-        "check",
-        "--read-data-subset=500M",
-    ]
-    execute_restic_command(
-        command=check_command,
-        environment=environment,
-        log_file_absolute=get_log_file_absolute(
-            log_folder=log_folder, args_scheduled=args_scheduled, command_name="check"
-        ),
-    )
 
 
 def main():

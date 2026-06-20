@@ -1,12 +1,10 @@
+import os
 import shlex
 import sys
 
-from commons import (
-    execute_restic_command,
-    load_args_and_config_file,
-    get_log_file_absolute,
-)
-import os
+from restic_configurator_py.load_args import load_args_and_config_file
+from restic_configurator_py.rcy_logging import get_log_file_absolute
+from restic_configurator_py.restic_operations.execute import execute_restic_command
 
 
 def main():

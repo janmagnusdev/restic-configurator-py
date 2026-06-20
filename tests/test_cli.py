@@ -11,3 +11,8 @@ def test_cli_help():
 
     assert "Usage:" in result.stdout.decode()
     print(result.stdout.decode())
+
+
+class LazyLoadingEntryPointTests:
+    def test(self):
+        pass
