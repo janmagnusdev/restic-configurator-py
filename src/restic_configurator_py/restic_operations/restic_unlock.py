@@ -6,11 +6,8 @@ from restic_configurator_py.restic_operations.execute import (
 )
 
 
-def restic_backup(system_config: SystemConfiguration):
-
+def restic_unlock(system_config: SystemConfiguration):
     with (
-        system_config.tmpfile_with("include_patterns") as tmp_include_file,
-        system_config.tmpfile_with("exclude_patterns") as tmp_exclude_file,
         system_config.tmpfile_with("password") as tmp_pass_file,
     ):
         backup_command = [
@@ -20,11 +17,7 @@ def restic_backup(system_config: SystemConfiguration):
             system_config.restic_repo_url,
             "--password-file",
             tmp_pass_file,
-            "backup",
-            "--files-from",
-            tmp_include_file,
-            "--exclude-file",
-            tmp_exclude_file,
+            "unlock",
         ]
 
         execute(backup_command, system_config)

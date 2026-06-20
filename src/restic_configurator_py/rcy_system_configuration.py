@@ -1,10 +1,13 @@
+import contextlib
 import copy
+import os
+import tempfile
 import tomllib
 import typing
 from pathlib import Path
 from typing import Annotated, Optional
 
-from pydantic import Field, PrivateAttr, SecretStr, model_validator
+from pydantic import Field, SecretStr, computed_field, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -43,15 +46,23 @@ class SystemConfiguration(BaseSettings, frozen=True):
         object.__setattr__(self.paths, "log_folder", absolute_from_relative)
         return self
 
-    @classmethod
-    def from_toml_file(cls, path: Path) -> "SystemConfiguration":
-        file_name = path.name
+    @computed_field
+    def secrets_file(self) -> Path:
+        return self.get_secrets_file(self.file_path)
+
+    @staticmethod
+    def get_secrets_file(file_path: Path) -> Path:
+        file_name = file_path.name
         split = file_name.split(".")
         split.insert(2, "secrets")
-        secrets_file = path.with_name(".".join(split))
+        return file_path.with_name(".".join(split))
+
+    @classmethod
+    def from_toml_file(cls, path: Path) -> "SystemConfiguration":
+        sf = cls.get_secrets_file(path)
 
         toml_dict = tomllib.loads(path.read_text(encoding="utf-8"))
-        toml_secret_dict = tomllib.loads(secrets_file.read_text(encoding="utf-8"))
+        toml_secret_dict = tomllib.loads(sf.read_text(encoding="utf-8"))
         toml_dict = cls.deep_merge(toml_dict, toml_secret_dict)
         model = cls(**toml_dict["repo"], file_path=path)
         return model
@@ -69,3 +80,29 @@ class SystemConfiguration(BaseSettings, frozen=True):
             else:
                 result[key] = copy.deepcopy(value)
         return result
+
+    @contextlib.contextmanager
+    def tmpfile_with(
+        self,
+        path_property_name: typing.Literal[
+            "include_patterns", "exclude_patterns", "password"
+        ],
+    ) -> typing.Generator[str, None, None]:
+        if path_property_name == "password":
+            content = self.password.get_secret_value()
+        else:
+            content_list: list[str] = getattr(self.paths, path_property_name)
+            content = "\n".join(content_list)
+
+        def abs(path: Path) -> str:
+            return str(path.resolve())
+
+        fd, path = tempfile.mkstemp(prefix="restic-files-", suffix=".lst")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+                f.write(content)
+            yield abs(
+                Path(path)
+            )  # fd is closed and flushed here, file is now safely readable
+        finally:
+            os.unlink(path)

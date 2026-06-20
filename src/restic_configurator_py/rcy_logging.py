@@ -11,29 +11,44 @@ from restic_configurator_py.constants import PROJECT_ROOT
 
 LOG_FILE_PATH = PROJECT_ROOT / "logs/rcy-main-log.log"
 
+root = logging.getLogger()
+root.handlers.clear()
+root.setLevel(logging.INFO)
+log_formatter = logging.Formatter(
+    fmt="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+)
+
+timed_rotating_handler = logging.handlers.TimedRotatingFileHandler(
+    LOG_FILE_PATH, backupCount=100, when="h", interval=6
+)
+
+timed_rotating_handler.setFormatter(log_formatter)
+
+root.addHandler(timed_rotating_handler)
+
 
 def create_logger(name: str) -> Logger:
-
-    log_formatter = logging.Formatter(
-        fmt="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
-    )
-
-    for handler in logging.root.handlers:
-        handler.setFormatter(log_formatter)
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
-    timed_rotating_handler = logging.handlers.TimedRotatingFileHandler(
-        LOG_FILE_PATH, backupCount=100, when="h", interval=6
-    )
-    timed_rotating_handler.setFormatter(log_formatter)
-
     stream_handler = logging.StreamHandler(sys.stderr)
     stream_handler.setFormatter(log_formatter)
 
-    logger.addHandler(timed_rotating_handler)
     logger.addHandler(stream_handler)
+
+    return logger
+
+
+def create_restic_logger(name: str) -> Logger:
+    name_appended = f"{name}.restic"
+
+    logger = logging.getLogger(name_appended)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False  # stop walking up to "module" and root
+    logger.addHandler(
+        timed_rotating_handler
+    )  # reuse the same instance, file logging preserved
 
     return logger
 

@@ -10,12 +10,8 @@ CMD_MOD = "restic_configurator_py.cli.commands.{}.cli"
 
 
 class LazyGroup(click.Group):
-    def __init__(self, *args, lazy_subcommands=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # lazy_subcommands is a map of the form:
-        #
-        #   {command-name} -> {module-name}.{command-object-name}
-        #
         self.lazy_subcommands = self._init_subcommands()
 
     def _init_subcommands(self) -> dict[str, str]:

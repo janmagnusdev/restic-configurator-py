@@ -1,29 +1,46 @@
+import os
 import subprocess
-import sys
 
-from typing_extensions import deprecated
-
-from restic_configurator_py.rcy_logging import create_logger
+from restic_configurator_py.rcy_logging import (
+    LOG_FILE_PATH,
+    create_logger,
+    create_restic_logger,
+)
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 logger = create_logger(__name__)
+restic_logger = create_restic_logger(__name__)
 
 
-@deprecated("TODO: this needs to be replaced")
-def execute_restic_command(command: list[str], environment, log_file_absolute: str):
+def make_environment(config: SystemConfiguration):
+    env = os.environ.copy()
+    env.update(config.envs)
+    env["RESTIC_UPDATE_FPS"] = "0.1"
+    return env
+
+
+def execute(command: list[str], config: SystemConfiguration):
     logger.info(f"command to execute: {' '.join(command)}")
+    logger.info(f"logging restic output to stdout and {LOG_FILE_PATH}")
 
-    # a appends to the file, w (over)writes; b stands for binary
-    with open(log_file_absolute, "wb") as buffered_file_writer:
-        buffered_file_writer.truncate()
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            env=environment,
-        )
-        # read from stdout until b"" is read, which stops the iter object
-        for c in iter(lambda: process.stdout.read(1), b""):
-            sys.stdout.buffer.write(c)
-            sys.stdout.buffer.flush()
-            buffered_file_writer.write(c)
-            buffered_file_writer.flush()
+    environment = make_environment(config)
+
+    if command[0] != config.restic_bin:
+        raise RuntimeError("invalid command", config.restic_bin)
+
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        env=environment,
+        text=True,
+        bufsize=1,  # buf by 1 line
+    )
+
+    for line in iter(process.stdout.readline, ""):
+        line = line.rstrip("\n")
+        print(line, flush=True)  # live to stdout
+        restic_logger.info(line)  # live to logger
+
+    process.stdout.close()
+    return process.wait()  # returns exit code

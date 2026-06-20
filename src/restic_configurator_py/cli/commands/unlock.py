@@ -1,11 +1,11 @@
 import click
 
 from restic_configurator_py.cli.cli import cli
-from restic_configurator_py.restic_operations import restic_backup
+from restic_configurator_py.restic_operations.restic_unlock import restic_unlock
 
 
 @cli.command()
 @click.pass_context
 def cli(ctx: click.Context):
     system = ctx.obj
-    restic_backup.restic_backup(system)
+    restic_unlock(system)

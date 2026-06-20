@@ -1,61 +1,16 @@
-import os
-import shlex
-import sys
+from rich import print as rprint
 
-from typing_extensions import deprecated
-
-from restic_configurator_py.load_args import load_args_and_config_file
-from restic_configurator_py.rcy_logging import get_log_file_absolute
-from restic_configurator_py.restic_operations.execute import execute_restic_command
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 
-@deprecated("TODO: this needs to be replaced")
-def main():
-    loading_result = load_args_and_config_file()
-    (
-        log_folder,
-        restic_path,
-        repo,
-        pass_file_path,
-        environment,
-        args,
-    ) = loading_result[
-        "log_folder",
-        "restic_path",
-        "repo",
-        "pass_file_path",
-        "environment",
-        "args",
-    ]
-
-    if not os.path.isdir(log_folder):
-        os.mkdir(log_folder)
-    if args.command is None:
-        raise RuntimeError("--command is required")
-
-    # since restic_path is the first argument, and that is defined, --command usage is safe
-    # however, one could manipulate the restic_exe_path :o but this is only for my usage
+def restic_ops(config: SystemConfiguration):
     ops_command = [
-        restic_path,
-        *shlex.split(args.command),
+        config.restic_bin,
+        "unlock",
         "-vv",
         "-r",
-        repo,
-        "--password-file",
-        pass_file_path,
+        config.restic_repo_url,
+        "--password-command",
+        f"'uv run rcy {config.file_path} get-password'",
     ]
-
-    log_file_absolute = get_log_file_absolute(
-        log_folder=log_folder, args_scheduled=args.scheduled, command_name="ops"
-    )
-
-    execute_restic_command(
-        ops_command, environment=environment, log_file_absolute=log_file_absolute
-    )
-
-    # all tasks done
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    rprint(" ".join(ops_command))

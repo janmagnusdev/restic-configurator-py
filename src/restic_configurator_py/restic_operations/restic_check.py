@@ -1,27 +1,29 @@
 from typing_extensions import deprecated
 
-from restic_configurator_py.rcy_logging import get_log_file_absolute
-from restic_configurator_py.restic_operations.execute import execute_restic_command
+from restic_configurator_py.rcy_system_configuration import (
+    SystemConfiguration,
+)
+from restic_configurator_py.restic_operations.execute import (
+    execute,
+)
 
 
 @deprecated("TODO: this needs to be replaced")
 def restic_check(
-    restic_path, repo, pass_file_path, environment, log_folder, args_scheduled
+    config: SystemConfiguration,
 ):
-    check_command = [
-        restic_path,
-        "-vv",
-        "-r",
-        repo,
-        "--password-file",
-        pass_file_path,
-        "check",
-        "--read-data-subset=500M",
-    ]
-    execute_restic_command(
-        command=check_command,
-        environment=environment,
-        log_file_absolute=get_log_file_absolute(
-            log_folder=log_folder, args_scheduled=args_scheduled, command_name="check"
-        ),
-    )
+
+    with (
+        config.tmpfile_with("password") as tmp_pass_file,
+    ):
+        check_command = [
+            config.restic_bin,
+            "-vv",
+            "-r",
+            config.restic_repo_url,
+            "--password-file",
+            tmp_pass_file,
+            "check",
+            "--read-data-subset=500M",
+        ]
+        execute(check_command, config)
