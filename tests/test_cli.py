@@ -1,11 +1,9 @@
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
-from click.testing import CliRunner
 
-from restic_configurator_py.constants import PROJECT_ROOT
+from constants import PROJECT_ROOT
 
 
 def test_cli_help():
@@ -39,3 +37,8 @@ def test_command_entry_points(cmd: Path):
     )
     assert "Error" not in proc.stdout
     assert "usage" in proc.stdout.lower()
+
+
+# TODO: use local restic repo for testing, pass via fixture
+def test_restic_backup():
+    pass

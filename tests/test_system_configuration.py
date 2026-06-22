@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from restic_configurator_py.constants import PROJECT_ROOT
+from constants import PROJECT_ROOT
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 

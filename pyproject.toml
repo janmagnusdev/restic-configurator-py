@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "attrs>=26.1.0",
     "click>=8.4.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
@@ -34,3 +35,19 @@ dev = [
     "ruff>=0.15.16",
 ]
 
+[tool.ruff.lint]
+extend-select = ["F401"]
+extend-safe-fixes = ["F401"]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/restic_configurator_py"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/restic_configurator_py/example.config.toml" = "systems/example.config.toml"
+"src/restic_configurator_py/example.config.secrets.toml" = "systems/example.config.secrets.toml"
+
+# mirror it for sdist too, so building from source works the same way
+[tool.hatch.build.targets.sdist.force-include]
+"src/restic_configurator_py/example.config.toml" = "systems/example.config.toml"
+"src/restic_configurator_py/example.config.secrets.toml" = "systems/example.config.secrets.toml"

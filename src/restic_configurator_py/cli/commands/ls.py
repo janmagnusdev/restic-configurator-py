@@ -1,5 +1,3 @@
-from typing import Iterable
-
 import click
 
 from restic_configurator_py.cli.lazy_group import with_restic_args
@@ -7,29 +5,24 @@ from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 from restic_configurator_py.execute import execute
 
 
-def restic_check(
-    config: SystemConfiguration,
-    restic_args: Iterable[str],
-):
-
+def restic_ls(system_config: SystemConfiguration, restic_args: tuple[str]):
     with (
-        config.tmpfile_with("password") as tmp_pass_file,
+        system_config.tmpfile_with("password") as tmp_pass_file,
     ):
         cmd = [
             "-r",
-            config.restic_repo_url,
+            system_config.restic_repo_url,
             "--password-file",
             tmp_pass_file,
-            "check",
-            "--read-data-subset=500M",
+            "ls",
             *restic_args,
         ]
-        execute(cmd, config)
+        execute(cmd, system_config)
 
 
 @with_restic_args
-@click.command()
+@click.command(context_settings={"ignore_unknown_options": True})
 @click.pass_context
 def cli(ctx: click.Context, restic_args: tuple[str]) -> None:
     system = ctx.obj
-    restic_check(system, restic_args)
+    restic_ls(system, restic_args)

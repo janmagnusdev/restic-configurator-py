@@ -4,27 +4,33 @@ import os
 import sys
 from datetime import datetime
 from logging import Logger
+from pathlib import Path
 
+from rich.logging import RichHandler
 from typing_extensions import deprecated
 
-from restic_configurator_py.constants import PROJECT_ROOT
 
-LOG_FILE_PATH = PROJECT_ROOT / "logs/rcy-main-log.log"
-
-root = logging.getLogger()
-root.handlers.clear()
-root.setLevel(logging.INFO)
 log_formatter = logging.Formatter(
     fmt="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
 )
+timed_rotating_handler: logging.handlers.TimedRotatingFileHandler
 
-timed_rotating_handler = logging.handlers.TimedRotatingFileHandler(
-    LOG_FILE_PATH, backupCount=100, when="h", interval=6
-)
 
-timed_rotating_handler.setFormatter(log_formatter)
+def setup_logging(log_file: Path):
+    root = logging.getLogger()
+    root.handlers.clear()
+    root.setLevel(logging.DEBUG)
 
-root.addHandler(timed_rotating_handler)
+    global timed_rotating_handler
+    timed_rotating_handler = logging.handlers.TimedRotatingFileHandler(
+        log_file, backupCount=100, when="h", interval=6
+    )
+
+    timed_rotating_handler.setFormatter(log_formatter)
+
+    root.addHandler(timed_rotating_handler)
+    root.addHandler(RichHandler(rich_tracebacks=True))
+    root.info(f"Logging output to {log_file}")
 
 
 def create_logger(name: str) -> Logger:

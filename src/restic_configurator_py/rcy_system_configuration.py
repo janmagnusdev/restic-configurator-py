@@ -18,6 +18,10 @@ class PostBackup(BaseSettings, frozen=True):
     shutdown: Annotated[bool, Field()]
 
 
+class ForgetOptions(BaseSettings, frozen=True):
+    prune: Annotated[bool, Field(default=False)]
+
+
 class RcyPaths(BaseSettings, frozen=True):
     log_folder: Path
     include_patterns: list[str]
@@ -36,7 +40,12 @@ class SystemConfiguration(BaseSettings, frozen=True):
 
     paths: Annotated[RcyPaths, Field()]
     post_backup: Annotated[PostBackup, Field()]
+    verbosity: Annotated[int, Field(default=2, ge=0, le=2)]
     envs: Annotated[dict[str, str], Field(default={})]
+
+    forget_options: Annotated[
+        ForgetOptions, Field(alias="forget", default_factory=ForgetOptions)
+    ]
 
     @model_validator(mode="after")
     def model_validator(self) -> typing.Self:
@@ -67,6 +76,15 @@ class SystemConfiguration(BaseSettings, frozen=True):
         model = cls(**toml_dict["repo"], file_path=path)
         return model
 
+    def common_restic_cli_params(self) -> list[str]:
+        return [f"-{'v' * self.verbosity}"]
+
+    def make_environment(self):
+        env = {}
+        env.update(self.envs)
+        env["RESTIC_UPDATE_FPS"] = "0.1"
+        return env
+
     @staticmethod
     def deep_merge(base, override):
         result = copy.deepcopy(base)
@@ -80,6 +98,9 @@ class SystemConfiguration(BaseSettings, frozen=True):
             else:
                 result[key] = copy.deepcopy(value)
         return result
+
+    def get_log_file(self) -> Path:
+        return (self.file_path.parent / "logs/rcy.log").resolve()
 
     @contextlib.contextmanager
     def tmpfile_with(

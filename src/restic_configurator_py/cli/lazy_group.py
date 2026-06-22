@@ -4,9 +4,13 @@ from pathlib import Path
 
 import click
 
+from restic_configurator_py.rcy_logging import create_logger
+
 HERE = Path(__file__).parent
 
 CMD_MOD = "restic_configurator_py.cli.commands.{}.cli"
+
+logger = create_logger(__name__)
 
 
 class LazyGroup(click.Group):
@@ -30,8 +34,10 @@ class LazyGroup(click.Group):
 
     def get_command(self, ctx, cmd_name):
         if cmd_name in self.lazy_subcommands:
-            return self._lazy_load(cmd_name)
-        return super().get_command(ctx, cmd_name)
+            cmd = self._lazy_load(cmd_name)
+            return cmd
+        cmd = super().get_command(ctx, cmd_name)
+        return cmd
 
     def _lazy_load(self, cmd_name):
         # lazily loading a command, first get the module name and attribute name
@@ -48,3 +54,27 @@ class LazyGroup(click.Group):
                 "a non-command object"
             )
         return cmd_object
+
+
+def with_restic_args(obj):
+    if isinstance(obj, click.Command):
+        if not any(p.name == "restic_args" for p in obj.params):
+            obj.params.append(
+                click.Argument(["restic_args"], nargs=-1, type=click.UNPROCESSED)
+            )
+        return obj
+
+    return obj
+
+
+def with_print_only(obj):
+    if isinstance(obj, click.Command):
+        if not any(p.name == "print_only" for p in obj.params):
+            obj.params.append(
+                click.Option(
+                    ["--print-only"], is_flag=True, flag_value=True, default=False
+                )
+            )
+        return obj
+
+    return obj

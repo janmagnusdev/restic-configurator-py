@@ -16,7 +16,7 @@
     <option name="uvArgs">
       <list />
     </option>
-    <option name="uvSdkKey" value="uv (restic-configurator-py) (2)" />
+    <option name="uvSdkKey" />
     <method v="2" />
   </configuration>
 </component>
