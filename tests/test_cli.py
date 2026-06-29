@@ -28,8 +28,14 @@ def test_command_entry_points(cmd: Path):
     if cmd.name == "__init__.py":
         return
 
+    cmd_name = cmd.stem.replace("_", "-")
+    args = ["uv", "run", "rcy", cmd_name]
+    if cmd_name not in ["dev", "prune", "restore"]:
+        args.append(test_system_config.resolve())
+    args.append("--help")
+
     proc = subprocess.run(
-        ["uv", "run", "rcy", test_system_config.resolve(), cmd.stem, "--help"],
+        args,
         cwd=PROJECT_ROOT,
         text=True,
         stdout=subprocess.PIPE,

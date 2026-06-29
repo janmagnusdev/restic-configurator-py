@@ -1,8 +1,11 @@
 import click
 
-from restic_configurator_py.cli.lazy_group import with_restic_args
+from restic_configurator_py.cli.click_extensions import (
+    with_restic_args,
+    with_system_config,
+)
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
-from restic_configurator_py.execute import execute
+from restic_configurator_py.restic import execute
 
 
 def restic_ls(system_config: SystemConfiguration, restic_args: tuple[str]):
@@ -21,8 +24,7 @@ def restic_ls(system_config: SystemConfiguration, restic_args: tuple[str]):
 
 
 @with_restic_args
-@click.command(context_settings={"ignore_unknown_options": True})
-@click.pass_context
-def cli(ctx: click.Context, restic_args: tuple[str]) -> None:
-    system = ctx.obj
-    restic_ls(system, restic_args)
+@with_system_config
+@click.command()
+def cli(system_config: SystemConfiguration, restic_args: tuple[str]):
+    restic_ls(system_config, restic_args)

@@ -2,9 +2,12 @@ from typing import Iterable
 
 import click
 
-from restic_configurator_py.cli.lazy_group import with_restic_args
+from restic_configurator_py.cli.click_extensions import (
+    with_restic_args,
+    with_system_config,
+)
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
-from restic_configurator_py.execute import execute
+from restic_configurator_py.restic import execute
 
 
 def restic_snapshots(system: SystemConfiguration, restic_args: Iterable[str]):
@@ -24,8 +27,7 @@ def restic_snapshots(system: SystemConfiguration, restic_args: Iterable[str]):
 
 
 @with_restic_args
+@with_system_config
 @click.command()
-@click.pass_context
-def cli(ctx: click.Context, restic_args: tuple[str]):
-    system = ctx.obj
+def cli(system: SystemConfiguration, restic_args: tuple[str]):
     restic_snapshots(system, restic_args)

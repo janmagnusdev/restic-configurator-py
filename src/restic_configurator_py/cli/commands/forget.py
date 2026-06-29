@@ -2,9 +2,12 @@ from typing import Iterable
 
 import click
 
-from restic_configurator_py.cli.lazy_group import with_restic_args
+from restic_configurator_py.cli.click_extensions import (
+    with_restic_args,
+    with_system_config,
+)
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
-from restic_configurator_py.execute import execute
+from restic_configurator_py.restic import execute
 
 
 def restic_forget(
@@ -54,25 +57,24 @@ def restic_forget(
 
 
 @with_restic_args
+@with_system_config
 @click.command()
-@click.pass_context
 @click.option("--dry-run/--no-dry-run", default=True)
 @click.option("--keep-policy", default=False, flag_value=True)
 @click.option("--keep-within-policy", default=False, flag_value=True)
 def cli(
-    ctx: click.Context,
+    config: SystemConfiguration,
+    restic_args: list[str],
     dry_run: bool,
     keep_policy: bool,
     keep_within_policy: bool,
-    restic_args: list[str],
 ):
     if keep_policy and keep_within_policy:
         raise RuntimeError(
             "only one of --keep-policy or --keep-within-policy is allowed"
         )
-    system = ctx.obj
     restic_forget(
-        system,
+        config,
         restic_args,
         dry_run,
         keep_policy,

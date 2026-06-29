@@ -19,4 +19,5 @@ def copy2clip(txt):
         cmd = "xclip -selection clipboard"
     else:
         raise RuntimeError(f"Unsupported operating system: {uname()}")
+    console.print("📋 Copied command to clipboard!", style="blue", emoji=True)
     return subprocess.run(cmd, text=True, input=txt)

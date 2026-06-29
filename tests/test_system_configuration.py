@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 from pydantic import ValidationError
 
 from constants import PROJECT_ROOT
@@ -27,3 +28,27 @@ def test_absolute_log_folder_path():
     )
     assert config.paths.log_folder.is_absolute()
     assert config.paths.log_folder == (PROJECT_ROOT / "systems/logs/").resolve()
+
+
+def test_deep_merge():
+    base = {"a": 1, "b": {"c": 2, "d": 3}}
+    override = {"b": {"c": 4}, "e": 5}
+    result = SystemConfiguration.deep_merge(base, override)
+    assert result == {"a": 1, "b": {"c": 4, "d": 3}, "e": 5}
+
+
+def test_tmpfile_with(tmp_path):
+    toml_path = PROJECT_ROOT / "systems/example.config.toml"
+    config = SystemConfiguration.from_toml_file(toml_path)
+
+    with config.tmpfile_with("password") as tmp_file:
+        path = Path(tmp_file)
+        assert path.exists()
+        assert path.read_text() == config.password.get_secret_value()
+    assert not path.exists()
+
+    with config.tmpfile_with("include_patterns") as tmp_file:
+        path = Path(tmp_file)
+        assert path.exists()
+        assert path.read_text() == "\n".join(config.paths.include_patterns)
+    assert not path.exists()

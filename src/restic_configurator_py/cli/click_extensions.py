@@ -1,5 +1,7 @@
 # in lazy_group.py
+import functools
 import importlib
+import inspect
 from pathlib import Path
 
 import click
@@ -34,10 +36,8 @@ class LazyGroup(click.Group):
 
     def get_command(self, ctx, cmd_name):
         if cmd_name in self.lazy_subcommands:
-            cmd = self._lazy_load(cmd_name)
-            return cmd
-        cmd = super().get_command(ctx, cmd_name)
-        return cmd
+            return self._lazy_load(cmd_name)
+        return super().get_command(ctx, cmd_name)
 
     def _lazy_load(self, cmd_name):
         # lazily loading a command, first get the module name and attribute name
@@ -47,13 +47,58 @@ class LazyGroup(click.Group):
         mod = importlib.import_module(modname)
         # get the Command object from that module
         cmd_object = getattr(mod, cmd_object_name)
-        # check the result to make debugging easier
+
         if not isinstance(cmd_object, click.Command):
-            raise ValueError(
-                f"Lazy loading of {import_path} failed by returning "
-                "a non-command object"
-            )
+            cmd_object = click.command(name=cmd_name)(cmd_object)
+        else:
+            cmd_object.name = cmd_name
+
         return cmd_object
+
+
+def with_system_config(obj):
+    if not isinstance(obj, click.Command):
+        return obj
+
+    if hasattr(obj, "_with_system_config_applied"):
+        return obj
+
+    if not any(p.name == "system_config_path" for p in obj.params):
+        obj.params.insert(
+            0,
+            click.Argument(
+                ["system_config_path"], type=click.Path(exists=True, path_type=Path)
+            ),
+        )
+
+    old_callback = obj.callback
+
+    @functools.wraps(old_callback)
+    def new_callback(*args, **kwargs):
+        system_config_path = kwargs.pop("system_config_path")
+
+        from restic_configurator_py.rcy_system_configuration import SystemConfiguration
+        from restic_configurator_py.cli.cli import CliSettings
+
+        system_configuration = SystemConfiguration.from_toml_file(system_config_path)
+
+        CliSettings.bootstrap_cli()
+        CliSettings.bootstrap_cli_with_system_config(system_configuration)
+
+        ctx = click.get_current_context()
+        ctx.obj = system_configuration
+
+        sig = inspect.signature(old_callback)
+        for name in ["system_config", "system", "config"]:
+            if name in sig.parameters:
+                kwargs[name] = system_configuration
+                break
+
+        return old_callback(*args, **kwargs)
+
+    obj.callback = new_callback
+    obj._with_system_config_applied = True
+    return obj
 
 
 def with_restic_args(obj):
@@ -64,7 +109,7 @@ def with_restic_args(obj):
             )
         return obj
 
-    return obj
+    return click.argument("restic_args", nargs=-1, type=click.UNPROCESSED)(obj)
 
 
 def with_print_only(obj):
@@ -77,4 +122,4 @@ def with_print_only(obj):
             )
         return obj
 
-    return obj
+    return click.option("--print-only", is_flag=True, default=False)(obj)

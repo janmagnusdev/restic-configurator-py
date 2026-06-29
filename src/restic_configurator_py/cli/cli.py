@@ -1,15 +1,12 @@
-from logging import Logger
-from pathlib import Path
+import shutil
 
 import click
 from pydantic_settings import BaseSettings
 from rich.traceback import install
 
-from restic_configurator_py.cli.lazy_group import LazyGroup
-from restic_configurator_py.rcy_logging import setup_logging, create_logger
+from restic_configurator_py.cli.click_extensions import LazyGroup
+from restic_configurator_py.rcy_logging import setup_logging, add_log_file_handler
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
-
-logger: Logger
 
 
 class CliSettings(
@@ -19,26 +16,24 @@ class CliSettings(
     pass
 
     @staticmethod
-    def bootstrap_cli(log_file: Path):
-        install()
-        setup_logging(log_file)
-        global logger
-        logger = create_logger(__name__)
+    def bootstrap_cli():
+        install(width=shutil.get_terminal_size().columns)
+        setup_logging()
+
+    @staticmethod
+    def bootstrap_cli_with_system_config(system_config: SystemConfiguration):
+        log_file = system_config.get_log_file()
+        log_file.parent.mkdir(exist_ok=True, parents=True)
+        add_log_file_handler(log_file)
 
 
 @click.group(name="rcy", cls=LazyGroup)
-@click.argument("system_config_path", type=click.Path(exists=True, path_type=Path))
-@click.pass_context
-def cli(ctx: click.Context, system_config_path: Path):
-    system_configuration = SystemConfiguration.from_toml_file(system_config_path)
-    log_file = system_configuration.get_log_file()
-    log_file.parent.mkdir(exist_ok=True, parents=True)
-
-    CliSettings.bootstrap_cli(log_file)
-    ctx.obj = system_configuration
+def cli():
+    pass
 
 
 def main() -> int:
+    CliSettings.bootstrap_cli()
     cli()
     return 0
 

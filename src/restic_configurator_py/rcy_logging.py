@@ -1,7 +1,6 @@
 import logging
 import logging.handlers
 import os
-import sys
 from datetime import datetime
 from logging import Logger
 from pathlib import Path
@@ -16,32 +15,29 @@ log_formatter = logging.Formatter(
 timed_rotating_handler: logging.handlers.TimedRotatingFileHandler
 
 
-def setup_logging(log_file: Path):
+def setup_logging():
     root = logging.getLogger()
     root.handlers.clear()
     root.setLevel(logging.DEBUG)
+    root.addHandler(RichHandler(rich_tracebacks=True))
+
+
+def add_log_file_handler(log_file: Path):
+    root = logging.getLogger()
 
     global timed_rotating_handler
     timed_rotating_handler = logging.handlers.TimedRotatingFileHandler(
         log_file, backupCount=100, when="h", interval=6
     )
 
-    timed_rotating_handler.setFormatter(log_formatter)
-
     root.addHandler(timed_rotating_handler)
-    root.addHandler(RichHandler(rich_tracebacks=True))
-    root.info(f"Logging output to {log_file}")
+    timed_rotating_handler.setFormatter(log_formatter)
 
 
 def create_logger(name: str) -> Logger:
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-
-    stream_handler = logging.StreamHandler(sys.stderr)
-    stream_handler.setFormatter(log_formatter)
-
-    logger.addHandler(stream_handler)
 
     return logger
 
@@ -52,9 +48,10 @@ def create_restic_logger(name: str) -> Logger:
     logger = logging.getLogger(name_appended)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False  # stop walking up to "module" and root
-    logger.addHandler(
-        timed_rotating_handler
-    )  # reuse the same instance, file logging preserved
+    if timed_rotating_handler is not None:
+        logger.addHandler(
+            timed_rotating_handler
+        )  # reuse the same instance, file logging preserved
 
     return logger
 

@@ -2,10 +2,14 @@ from typing import Iterable
 
 import click
 
-from restic_configurator_py.cli.lazy_group import with_restic_args, with_print_only
+from restic_configurator_py.cli.click_extensions import (
+    with_restic_args,
+    with_print_only,
+    with_system_config,
+)
 from restic_configurator_py.rcy_logging import create_logger
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
-from restic_configurator_py.execute import execute
+from restic_configurator_py.restic import execute
 from restic_configurator_py.cli.commands.unlock import restic_unlock
 
 logger = create_logger(__name__)
@@ -37,18 +41,20 @@ def restic_backup(
         ]
 
         exit_code = execute(cmd, system_config, print_only=print_only)
-        if exit_code == 11:
-            logger.warning("Repo is already locked - unlocking, then trying 1x again")
-            restic_unlock(system_config, [])
-            restic_backup(system_config, restic_args, try_no=try_no + 1)
-            if try_no >= 1:
-                logger.error("Repo is already locked and unlocking did not work.")
+    if exit_code == 11:
+        logger.warning("Repo is already locked - unlocking, then trying 1x again")
+        restic_unlock(system_config, [])
+        restic_backup(
+            system_config, restic_args, try_no=try_no + 1, print_only=print_only
+        )
+        if try_no >= 1:
+            logger.error("Repo is already locked and unlocking did not work.")
+    # TODO: execute forget --prune and check after backup
 
 
-@with_restic_args
 @with_print_only
+@with_restic_args
+@with_system_config
 @click.command()
-@click.pass_context
-def cli(ctx: click.Context, restic_args: tuple[str], print_only: bool):
-    system_config = ctx.obj
+def cli(system_config: SystemConfiguration, restic_args: tuple[str], print_only: bool):
     restic_backup(system_config, restic_args, print_only=print_only)

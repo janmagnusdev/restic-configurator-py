@@ -76,7 +76,7 @@ class SystemConfiguration(BaseSettings, frozen=True):
         model = cls(**toml_dict["repo"], file_path=path)
         return model
 
-    def common_restic_cli_params(self) -> list[str]:
+    def _common_restic_cli_params(self) -> list[str]:
         return [f"-{'v' * self.verbosity}"]
 
     def make_environment(self):
@@ -84,6 +84,12 @@ class SystemConfiguration(BaseSettings, frozen=True):
         env.update(self.envs)
         env["RESTIC_UPDATE_FPS"] = "0.1"
         return env
+
+    def pepper_with_base_command(self, command: list[str]):
+        command.insert(0, self.restic_bin)
+
+        for i, cp in enumerate(self._common_restic_cli_params()):
+            command.insert(1 + i, cp)
 
     @staticmethod
     def deep_merge(base, override):

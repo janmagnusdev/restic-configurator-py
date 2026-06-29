@@ -2,8 +2,12 @@ from typing import Literal, Iterable
 
 import click
 
-from restic_configurator_py.cli.lazy_group import with_restic_args
-from restic_configurator_py.execute import execute
+from restic_configurator_py.cli.click_extensions import (
+    with_restic_args,
+    with_system_config,
+)
+from restic_configurator_py.restic import execute
+from restic_configurator_py.rcy_system_configuration import SystemConfiguration
 
 
 def restic_repair(system_config, repair_command, restic_args: Iterable[str]):
@@ -24,15 +28,14 @@ def restic_repair(system_config, repair_command, restic_args: Iterable[str]):
 
 
 @with_restic_args
+@with_system_config
 @click.command()
-@click.pass_context
 @click.argument("repair_command")
 def cli(
-    ctx: click.Context,
+    system_config: SystemConfiguration,
     repair_command: Literal["index", "packs", "snapshots"],
     restic_args: tuple[str],
 ):
-    system = ctx.obj
     if repair_command not in ["index", "packs", "snapshots"]:
         raise RuntimeError(f"Invalid repair command: {repair_command}")
-    restic_repair(system, repair_command, restic_args)
+    restic_repair(system_config, repair_command, restic_args)
