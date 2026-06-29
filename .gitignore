@@ -14,6 +14,8 @@ venv
 # do include the example config
 !example.config.secrets.toml
 
+!tests/data/test.config.secrets.toml
+
 systems/not_checked_in
 
 TODOS.md
