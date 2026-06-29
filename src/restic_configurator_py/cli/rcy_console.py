@@ -7,9 +7,7 @@ from restic_configurator_py.constants import MACOS, LINUX
 
 console = rconsole.Console()
 
-restic_console = rconsole.Console(
-    markup=False,
-)
+restic_console = rconsole.Console()
 
 
 def copy2clip(txt):

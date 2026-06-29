@@ -1,13 +1,15 @@
 import contextlib
 import copy
 import os
+import shlex
+import subprocess
 import tempfile
 import tomllib
 import typing
 from pathlib import Path
 from typing import Annotated, Optional
 
-from pydantic import Field, SecretStr, computed_field, model_validator
+from pydantic import Field, computed_field, model_validator, SecretStr, EmailStr
 from pydantic_settings import BaseSettings
 
 
@@ -20,6 +22,9 @@ class PostBackup(BaseSettings, frozen=True):
 
 class ForgetOptions(BaseSettings, frozen=True):
     prune: Annotated[bool, Field(default=False)]
+    keep_policy: Annotated[
+        typing.Literal["within", "default"] | None, Field(default=None)
+    ]
 
 
 class RcyPaths(BaseSettings, frozen=True):
@@ -33,6 +38,7 @@ class SystemConfiguration(BaseSettings, frozen=True):
 
     name: Annotated[str, Field()]
     password: Annotated[SecretStr, Field()]
+    notify_mail: Annotated[EmailStr | None, Field(default=None)]
     restic_repo_url: Annotated[str, Field()]
     restic_bin: Annotated[str, Field()]
     include_patterns: Annotated[Optional[list[str]], Field(default=[])]
@@ -66,13 +72,49 @@ class SystemConfiguration(BaseSettings, frozen=True):
         split.insert(2, "secrets")
         return file_path.with_name(".".join(split))
 
+    @staticmethod
+    def get_secrets_commands_file(file_path: Path) -> Path:
+        file_name = file_path.name
+        split = file_name.split(".")
+        split.insert(2, "secrets")
+        return file_path.with_name(".".join(split))
+
+    def get_password_cmd(self):
+        sf = self.get_secrets_file(self.file_path)
+        toml_secret_dict = tomllib.loads(sf.read_text(encoding="utf-8"))
+        return toml_secret_dict["repo"]["password-cmd"]
+
+    @classmethod
+    def populate_from_secrets_file(cls, path, toml_dict: dict):
+        sf = cls.get_secrets_file(path)
+        toml_secret_dict = tomllib.loads(sf.read_text(encoding="utf-8"))
+
+        with contextlib.suppress(KeyError):
+            if toml_secret_dict["repo"]["password-cmd"]:
+                toml_dict["repo"]["password"] = subprocess.run(
+                    shlex.split(toml_secret_dict["repo"]["password-cmd"]),
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                ).stdout.strip()
+            del toml_secret_dict["repo"]["password-cmd"]
+            for secret_env_name, secret_env_command in toml_secret_dict["repo"]["envs"][
+                "cmds"
+            ].items():
+                toml_secret_dict["repo"]["envs"][secret_env_name] = subprocess.run(
+                    shlex.split(secret_env_command),
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                ).stdout.strip()
+            del toml_secret_dict["repo"]["envs"]["cmds"]
+
+        return cls.deep_merge(toml_dict, toml_secret_dict)
+
     @classmethod
     def from_toml_file(cls, path: Path) -> "SystemConfiguration":
-        sf = cls.get_secrets_file(path)
-
         toml_dict = tomllib.loads(path.read_text(encoding="utf-8"))
-        toml_secret_dict = tomllib.loads(sf.read_text(encoding="utf-8"))
-        toml_dict = cls.deep_merge(toml_dict, toml_secret_dict)
+        toml_dict = cls.populate_from_secrets_file(path, toml_dict)
         model = cls(**toml_dict["repo"], file_path=path)
         return model
 
@@ -86,10 +128,15 @@ class SystemConfiguration(BaseSettings, frozen=True):
         return env
 
     def pepper_with_base_command(self, command: list[str]):
-        command.insert(0, self.restic_bin)
+        new_command = [*command]
+        new_command.insert(0, self.restic_bin)
 
         for i, cp in enumerate(self._common_restic_cli_params()):
-            command.insert(1 + i, cp)
+            new_command.insert(1 + i, cp)
+        return new_command
+
+    def is_peppered(self, command: list[str]) -> bool:
+        return command[0] == self.restic_bin
 
     @staticmethod
     def deep_merge(base, override):

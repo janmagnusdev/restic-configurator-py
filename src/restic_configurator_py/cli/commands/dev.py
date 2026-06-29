@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 from rich.pretty import pprint
 
+from restic_configurator_py import network
 from restic_configurator_py.cli.cli import CliSettings
 from restic_configurator_py.rcy_logging import create_logger
 from restic_configurator_py.rcy_system_configuration import SystemConfiguration
@@ -34,3 +35,9 @@ def print_example_config():
     )
     example_config = SystemConfiguration.from_toml_file(example_config_s)
     pprint(example_config)
+
+
+@cli.command()
+def send_mail():
+    msg = network.create_message("test", "mail@janmagnus.dev", "test")
+    network.send(msg)

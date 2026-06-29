@@ -1,3 +1,4 @@
+import sys
 from typing import Iterable
 
 import click
@@ -19,4 +20,4 @@ def restic_version(system_config: SystemConfiguration, restic_args: Iterable[str
 @with_system_config
 @click.command()
 def cli(system_config: SystemConfiguration, restic_args: tuple[str]):
-    restic_version(system_config, restic_args)
+    sys.exit(restic_version(system_config, restic_args))

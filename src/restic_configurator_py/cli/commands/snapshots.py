@@ -1,3 +1,4 @@
+import sys
 from typing import Iterable
 
 import click
@@ -23,11 +24,11 @@ def restic_snapshots(system: SystemConfiguration, restic_args: Iterable[str]):
             *restic_args,
         ]
 
-        execute(cmd, system)
+        return execute(cmd, system)
 
 
 @with_restic_args
 @with_system_config
 @click.command()
 def cli(system: SystemConfiguration, restic_args: tuple[str]):
-    restic_snapshots(system, restic_args)
+    sys.exit(restic_snapshots(system, restic_args))

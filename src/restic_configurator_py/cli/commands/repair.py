@@ -1,3 +1,4 @@
+import sys
 from typing import Literal, Iterable
 
 import click
@@ -24,7 +25,7 @@ def restic_repair(system_config, repair_command, restic_args: Iterable[str]):
             *restic_args,
         ]
 
-        execute(cmd, system_config)
+        return execute(cmd, system_config)
 
 
 @with_restic_args
@@ -38,4 +39,4 @@ def cli(
 ):
     if repair_command not in ["index", "packs", "snapshots"]:
         raise RuntimeError(f"Invalid repair command: {repair_command}")
-    restic_repair(system_config, repair_command, restic_args)
+    sys.exit(restic_repair(system_config, repair_command, restic_args))

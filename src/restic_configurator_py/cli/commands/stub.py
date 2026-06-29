@@ -1,3 +1,5 @@
+import sys
+
 import click
 
 from restic_configurator_py.cli.click_extensions import (
@@ -15,14 +17,15 @@ def restic_stub(
         "-r",
         system_config.restic_repo_url,
         "--password-command",
-        f"'rcy get-password {system_config.file_path}'",
+        f"'{system_config.get_password_cmd()}'",
         *restic_args,
     ]
-    system_config.pepper_with_base_command(cmd)
+    cmd = system_config.pepper_with_base_command(cmd)
     if cp_env:
         print_and_copy_with_env(cmd, system_config)
     else:
         print_and_copy(cmd, system_config)
+    return 0
 
 
 @with_system_config
@@ -30,4 +33,4 @@ def restic_stub(
 @click.command()
 @click.option("--cp-env", default=False, is_flag=True)
 def cli(system_config: SystemConfiguration, restic_args: list[str], cp_env: bool):
-    restic_stub(system_config, restic_args, cp_env)
+    sys.exit(restic_stub(system_config, restic_args, cp_env))
