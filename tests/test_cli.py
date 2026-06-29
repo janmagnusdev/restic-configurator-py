@@ -43,8 +43,3 @@ def test_command_entry_points(cmd: Path):
     )
     assert "Error" not in proc.stdout
     assert "usage" in proc.stdout.lower()
-
-
-# TODO: use local restic repo for testing, pass via fixture
-def test_restic_backup():
-    pass

@@ -1,12 +1,9 @@
 import logging
 import logging.handlers
-import os
-from datetime import datetime
 from logging import Logger
 from pathlib import Path
 
 from rich.logging import RichHandler
-from typing_extensions import deprecated
 
 
 log_formatter = logging.Formatter(
@@ -48,21 +45,10 @@ def create_restic_logger(name: str) -> Logger:
     logger = logging.getLogger(name_appended)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False  # stop walking up to "module" and root
+    global timed_rotating_handler
     if timed_rotating_handler is not None:
         logger.addHandler(
             timed_rotating_handler
         )  # reuse the same instance, file logging preserved
 
     return logger
-
-
-@deprecated("TODO: this needs to be replaced")
-def get_log_file_absolute(log_folder, args_scheduled, command_name):
-    partial_scheduled = ".scheduled" if args_scheduled else ""
-
-    current_time = datetime.now().isoformat()
-    # Replace colons (which are invalid characters in file names) with underscores
-    current_run_log_file = current_time.replace(":", "_")
-    current_run_log_file += f".{command_name}{partial_scheduled}.log"
-
-    return os.path.abspath(os.path.join(log_folder, current_run_log_file))

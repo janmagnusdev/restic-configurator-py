@@ -1,3 +1,5 @@
+import sys
+
 import click
 
 from restic_configurator_py.cli.click_extensions import (
@@ -20,11 +22,11 @@ def restic_ls(system_config: SystemConfiguration, restic_args: tuple[str]):
             "ls",
             *restic_args,
         ]
-        execute(cmd, system_config)
+        return execute(cmd, system_config)
 
 
 @with_restic_args
 @with_system_config
 @click.command()
 def cli(system_config: SystemConfiguration, restic_args: tuple[str]):
-    restic_ls(system_config, restic_args)
+    sys.exit(restic_ls(system_config, restic_args))
