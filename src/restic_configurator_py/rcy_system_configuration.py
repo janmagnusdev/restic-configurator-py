@@ -124,7 +124,7 @@ class SystemConfiguration(BaseSettings, frozen=True):
     def make_environment(self):
         env = {}
         env.update(self.envs)
-        env["RESTIC_UPDATE_FPS"] = "0.1"
+        env["RESTIC_PROGRESS_FPS"] = "0.1"
         return env
 
     def pepper_with_base_command(self, command: list[str]):
