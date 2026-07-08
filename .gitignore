@@ -9,13 +9,4 @@ system/development-system-macos/
 # python environment
 venv
 
-# Sensitive configuration files containing passwords/secrets
-*.secrets.toml
-# do include the example config
-!example.config.secrets.toml
-
-!tests/data/test.config.secrets.toml
-
-systems/not_checked_in
-
 TODOS.md
